@@ -369,16 +369,33 @@ The feedback loop is self-improving. Better wiki leads to faster answers. Faster
 1. Is Claude running? (`./start.sh` must be active)
 2. Is the webhook listening? `curl http://127.0.0.1:8790/health`
 3. Are cron jobs installed? `crontab -l | grep dream`
+4. Does the cron port match `.mcp.json`? `setup.sh` sets this automatically, but if you changed the port after setup, update the cron jobs: `crontab -e`
 
 **Telegram messages dropping:**
 - Make sure `start.sh` uses `server:telegram`, not `plugin:telegram`
 - Check that `.mcp.json` has the telegram server entry
-- Each `--dangerously-load-development-channels` flag must be separate
+- Each `--dangerously-load-development-channels` flag must be separate (comma-separated does NOT work)
+
+**Telegram gate blocking everything:**
+- Claude gets blocked 3 times then the circuit breaker forces the gate open — this is expected behaviour on first use while Claude learns the pattern
+- If it persists, check that the tool names in `.hooks/telegram_gate.py` match your setup: `mcp__telegram__*` for `server:` delivery, `mcp__plugin_telegram_telegram__*` for `plugin:` delivery (the repo includes both)
+- The gate only activates on Telegram messages (tagged `source="telegram"`), not CLI input
+
+**`/telegram:configure` overwrites the wrong bot:**
+- `/telegram:configure` writes to the global state directory (`~/.claude/channels/telegram/`), not the project-local one
+- For multi-instance setups, write the token directly: `echo "TELEGRAM_BOT_TOKEN=<token>" > .channels/telegram/.env`
+- `setup.sh` handles this automatically — it prompts for the token and writes to the project-local state dir
+
+**Webhook port mismatch:**
+- The webhook port lives in `.mcp.json` (the source of truth), not `config.env`
+- `setup.sh` reads the port from `.mcp.json` when installing cron jobs
+- If you change the port, update `.mcp.json` and re-install cron jobs: `crontab -e`
 
 **Voice not transcribing:**
 - Is `whisper-cli` installed? `which whisper-cli`
 - Is `ffmpeg` installed? `which ffmpeg`
 - Is `STT_MODEL` set in `.mcp.json` to a valid model path?
+- `setup.sh` auto-detects the model at `/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin` (macOS/Homebrew)
 
 **Wiki not compiling:**
 - Check `wiki/log.md` for recent activity
