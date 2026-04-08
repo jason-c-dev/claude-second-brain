@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "webhook-channel": {
+      "command": "bun",
+      "args": ["run", ".channels/webhook-channel/src/index.ts"],
+      "env": {
+        "WEBHOOK_PORT": "8790"
+      }
+    },
+    "voice-tools": {
+      "command": "bun",
+      "args": ["run", ".tools/voice-tools/src/index.ts"],
+      "env": {
+        "STT_MODEL": "/path/to/whisper-cpp/models/ggml-base.en.bin"
+      }
+    }
+  }
+}

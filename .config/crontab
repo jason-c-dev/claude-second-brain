@@ -1,0 +1,10 @@
+# Claude Second Brain — Dream cycle cron jobs
+#
+# Install:  crontab .config/crontab      (replaces existing crontab)
+# Merge:    (crontab -l; cat .config/crontab) | crontab -   (appends)
+#
+# Adjust times to your preference. These default to overnight hours.
+# If you changed WEBHOOK_PORT in config.env, update the port below to match.
+
+3 2 * * * curl -s -X POST http://127.0.0.1:8790/dream-memory -H 'Content-Type: application/json' -d '{"task":"dream-memory"}'
+33 3 * * * curl -s -X POST http://127.0.0.1:8790/dream-wiki -H 'Content-Type: application/json' -d '{"task":"dream-wiki"}'

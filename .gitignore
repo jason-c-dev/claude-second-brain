@@ -1,0 +1,6 @@
+node_modules/
+config.env
+.claude/worktrees/
+.config/compiled-raw.txt
+output/
+.DS_Store
