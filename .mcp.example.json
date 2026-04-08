@@ -13,6 +13,13 @@
       "env": {
         "STT_MODEL": "/path/to/whisper-cpp/models/ggml-base.en.bin"
       }
+    },
+    "telegram": {
+      "command": "bun",
+      "args": ["run", "--cwd", "TELEGRAM_PLUGIN_PATH", "--shell=bun", "--silent", "start"],
+      "env": {
+        "TELEGRAM_STATE_DIR": "TELEGRAM_STATE_DIR_PATH"
+      }
     }
   }
 }

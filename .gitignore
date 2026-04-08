@@ -1,6 +1,11 @@
 node_modules/
 config.env
+.mcp.json
+.channels/telegram/.env
+.channels/telegram/access.json
 .claude/worktrees/
+.claude/settings.local.json
 .config/compiled-raw.txt
+.obsidian/
 output/
 .DS_Store

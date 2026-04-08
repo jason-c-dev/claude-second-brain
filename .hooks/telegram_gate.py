@@ -12,6 +12,11 @@ import sys
 STATE_FILE = "/tmp/claude_telegram_gate.json"
 
 TELEGRAM_COMM_TOOLS = {
+    # server: delivery path (recommended — used by start.sh)
+    "mcp__telegram__react",
+    "mcp__telegram__reply",
+    "mcp__telegram__edit_message",
+    # plugin: delivery path (legacy)
     "mcp__plugin_telegram_telegram__react",
     "mcp__plugin_telegram_telegram__reply",
     "mcp__plugin_telegram_telegram__edit_message",
@@ -102,8 +107,8 @@ def handle_pre_tool_use(data):
     print(
         "BLOCKED: You MUST send a Telegram acknowledgment before "
         "making other tool calls. Call "
-        "mcp__plugin_telegram_telegram__react with emoji \U0001f440 AND "
-        "mcp__plugin_telegram_telegram__reply with a brief status "
+        "mcp__telegram__react with emoji \U0001f440 AND "
+        "mcp__telegram__reply with a brief status "
         "message (e.g. 'Working on it...'). Then retry your work.",
         file=sys.stderr,
     )

@@ -40,19 +40,19 @@ if [ -n "$MISSING" ]; then
   exit 1
 fi
 
-echo "[1/5] Prerequisites OK (bun, python3, claude)"
+echo "[1/8] Prerequisites OK (bun, python3, claude)"
 
 # ── Install dependencies ─────────────────────────────────────────────
 
-echo "[2/5] Installing dependencies..."
+echo "[2/8] Installing dependencies..."
 (cd .channels/webhook-channel && bun install --silent)
 (cd .tools/voice-tools && bun install --silent)
 echo "      Dependencies installed."
 
 # ── Scaffold directories ─────────────────────────────────────────────
 
-echo "[3/5] Scaffolding directories..."
-mkdir -p raw wiki output .config
+echo "[3/8] Scaffolding directories..."
+mkdir -p raw wiki output .config .channels/telegram
 touch .config/compiled-raw.txt
 echo "      Directories ready."
 
@@ -60,24 +60,175 @@ echo "      Directories ready."
 
 if [ ! -f config.env ]; then
   cp config.example.env config.env
-  echo "[4/5] Created config.env from template — edit it with your values."
+  echo "[4/8] Created config.env from template."
 else
-  echo "[4/5] config.env already exists — skipping."
+  echo "[4/8] config.env already exists — skipping."
 fi
 
-# ── Whisper model (optional) ─────────────────────────────────────────
+# ── Telegram bot token ──────────────────────────────────────────────
 
-echo "[5/5] Voice transcription setup (optional)"
+if [ ! -f .channels/telegram/.env ]; then
+  echo ""
+  echo "[5/8] Telegram setup"
+  echo "      Create a bot via @BotFather on Telegram and paste the token below."
+  echo "      (press Enter to skip if you don't have one yet)"
+  echo ""
+  read -p "      Bot token: " BOT_TOKEN
+
+  if [ -n "$BOT_TOKEN" ]; then
+    echo "TELEGRAM_BOT_TOKEN=$BOT_TOKEN" > .channels/telegram/.env
+    echo "      Bot token saved."
+
+    # Prompt for chat ID since we have their attention
+    echo ""
+    echo "      Now enter your personal Telegram chat ID."
+    echo "      Find it by messaging @userinfobot on Telegram."
+    echo ""
+    read -p "      Chat ID: " CHAT_ID
+
+    if [ -n "$CHAT_ID" ]; then
+      # Update config.env with the chat ID
+      if grep -q "TELEGRAM_CHAT_ID=YOUR_CHAT_ID" config.env 2>/dev/null; then
+        sed -i '' "s/TELEGRAM_CHAT_ID=YOUR_CHAT_ID/TELEGRAM_CHAT_ID=$CHAT_ID/" config.env
+        echo "      Chat ID saved to config.env"
+      fi
+
+      # Create access.json with this user on the allowlist
+      cat > .channels/telegram/access.json << EOFJSON
+{
+  "dmPolicy": "pairing",
+  "allowFrom": [
+    "$CHAT_ID"
+  ],
+  "groups": {},
+  "pending": {}
+}
+EOFJSON
+      echo "      Access config created — your chat ID is on the allowlist."
+    fi
+  else
+    echo "      Skipped — you can set this up later. See README for details."
+  fi
+else
+  echo "[5/8] Telegram bot token already configured."
+  # Ensure access.json exists if we have a chat ID in config.env
+  if [ ! -f .channels/telegram/access.json ] && [ -f config.env ]; then
+    EXISTING_CHAT_ID=$(grep "^TELEGRAM_CHAT_ID=" config.env 2>/dev/null | cut -d= -f2)
+    if [ -n "$EXISTING_CHAT_ID" ] && [ "$EXISTING_CHAT_ID" != "YOUR_CHAT_ID" ]; then
+      cat > .channels/telegram/access.json << EOFJSON
+{
+  "dmPolicy": "pairing",
+  "allowFrom": [
+    "$EXISTING_CHAT_ID"
+  ],
+  "groups": {},
+  "pending": {}
+}
+EOFJSON
+      echo "      Created access.json from config.env chat ID."
+    fi
+  fi
+fi
+
+# ── MCP configuration ───────────────────────────────────────────────
+
+if [ ! -f .mcp.json ]; then
+  # Find the Telegram plugin cache path
+  TELEGRAM_PLUGIN=""
+  PLUGIN_BASE="$HOME/.claude/plugins/cache/claude-plugins-official/telegram"
+  if [ -d "$PLUGIN_BASE" ]; then
+    TELEGRAM_PLUGIN=$(ls -d "$PLUGIN_BASE"/*/ 2>/dev/null | sort -V | tail -1)
+  fi
+
+  cp .mcp.example.json .mcp.json
+
+  STATE_DIR="$SCRIPT_DIR/.channels/telegram"
+  python3 -c "
+import json, sys
+with open('.mcp.json') as f:
+    cfg = json.load(f)
+plugin_path = sys.argv[1]
+state_dir = sys.argv[2]
+if plugin_path:
+    cfg['mcpServers']['telegram']['args'][2] = plugin_path.rstrip('/')
+    cfg['mcpServers']['telegram']['env']['TELEGRAM_STATE_DIR'] = state_dir
+else:
+    del cfg['mcpServers']['telegram']
+with open('.mcp.json', 'w') as f:
+    json.dump(cfg, f, indent=2)
+    f.write('\n')
+" "${TELEGRAM_PLUGIN}" "${STATE_DIR}"
+
+  if [ -n "$TELEGRAM_PLUGIN" ]; then
+    echo "[6/8] Created .mcp.json — Telegram plugin found."
+  else
+    echo "[6/8] Created .mcp.json — Telegram plugin not found."
+    echo "      Install it first:  claude  then  /plugin install telegram"
+    echo "      Then re-run:  ./setup.sh"
+  fi
+
+  # Auto-detect whisper model path
+  WHISPER_MODEL=""
+  if [ -f "/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin" ]; then
+    WHISPER_MODEL="/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin"
+  elif [ -f "$HOME/.local/share/whisper-cpp/models/ggml-base.en.bin" ]; then
+    WHISPER_MODEL="$HOME/.local/share/whisper-cpp/models/ggml-base.en.bin"
+  fi
+
+  if [ -n "$WHISPER_MODEL" ]; then
+    python3 -c "
+import json
+with open('.mcp.json') as f:
+    cfg = json.load(f)
+cfg['mcpServers']['voice-tools']['env']['STT_MODEL'] = '$WHISPER_MODEL'
+with open('.mcp.json', 'w') as f:
+    json.dump(cfg, f, indent=2)
+    f.write('\n')
+"
+    echo "      Whisper model auto-detected: $WHISPER_MODEL"
+  fi
+else
+  echo "[6/8] .mcp.json already exists — skipping."
+fi
+
+# ── Cron jobs ────────────────────────────────────────────────────────
+
+# Read the webhook port from .mcp.json (source of truth)
+WEBHOOK_PORT="8790"
+if [ -f .mcp.json ]; then
+  WEBHOOK_PORT=$(python3 -c "
+import json
+with open('.mcp.json') as f:
+    cfg = json.load(f)
+print(cfg.get('mcpServers',{}).get('webhook-channel',{}).get('env',{}).get('WEBHOOK_PORT','8790'))
+" 2>/dev/null || echo "8790")
+fi
+
+if crontab -l 2>/dev/null | grep -q "dream-memory"; then
+  echo "[7/8] Cron jobs already installed — skipping."
+else
+  # Generate crontab entries with the correct port
+  CRON_ENTRIES="3 2 * * * curl -s -X POST http://127.0.0.1:${WEBHOOK_PORT}/dream-memory -H 'Content-Type: application/json' -d '{\"task\":\"dream-memory\"}'
+33 3 * * * curl -s -X POST http://127.0.0.1:${WEBHOOK_PORT}/dream-wiki -H 'Content-Type: application/json' -d '{\"task\":\"dream-wiki\"}'"
+
+  (crontab -l 2>/dev/null; echo "$CRON_ENTRIES") | crontab -
+  echo "[7/8] Cron jobs installed (port ${WEBHOOK_PORT}, dreams at 2:03 AM + 3:33 AM)."
+  echo "      Edit times with:  crontab -e"
+fi
+
+# ── Whisper check (optional) ─────────────────────────────────────────
+
+echo "[8/8] Voice transcription (optional)"
 if command -v whisper-cli &>/dev/null; then
   echo "      whisper-cli found."
 elif command -v ffmpeg &>/dev/null; then
   echo "      ffmpeg found but whisper-cli not installed."
-  echo "      To enable voice: https://github.com/ggerganov/whisper.cpp"
+  echo "      To enable voice: brew install whisper-cpp && whisper-cli --download-model base.en"
 else
   echo "      ffmpeg and whisper-cli not found."
   echo "      Voice transcription requires both. Install if needed:"
-  echo "        brew install ffmpeg"
-  echo "        https://github.com/ggerganov/whisper.cpp"
+  echo "        brew install ffmpeg whisper-cpp"
+  echo "        whisper-cli --download-model base.en"
 fi
 
 # ── Done ─────────────────────────────────────────────────────────────
@@ -87,21 +238,48 @@ echo "=== Setup complete! ==="
 echo ""
 echo "Next steps:"
 echo ""
-echo "  1. Edit config.env with your Telegram chat ID and other settings"
-echo ""
-echo "  2. Set up Telegram (one-time):"
-echo "     - Create a bot via @BotFather on Telegram"
-echo "     - In a Claude session: /plugin install telegram"
-echo "     - Then: /telegram:access"
-echo "     - See: https://docs.anthropic.com/en/docs/claude-code/telegram"
-echo ""
-echo "  3. Install cron jobs for overnight dreams:"
-echo "     (crontab -l 2>/dev/null; cat .config/crontab) | crontab -"
-echo ""
-echo "  4. Launch:"
+
+# Check what's still needed
+NEEDS_PLUGIN=false
+NEEDS_TOKEN=false
+NEEDS_ACCESS=false
+
+if [ ! -f .mcp.json ] || ! python3 -c "import json; json.load(open('.mcp.json'))['mcpServers']['telegram']" 2>/dev/null; then
+  NEEDS_PLUGIN=true
+fi
+if [ ! -f .channels/telegram/.env ]; then
+  NEEDS_TOKEN=true
+fi
+
+if $NEEDS_PLUGIN || $NEEDS_TOKEN; then
+  echo "  Remaining Telegram setup:"
+  if $NEEDS_PLUGIN; then
+    echo "    1. Start a plain Claude session:  claude"
+    echo "    2. Install the plugin:  /plugin install telegram"
+    echo "    3. Exit and re-run:  ./setup.sh"
+    echo ""
+  fi
+  if $NEEDS_TOKEN; then
+    echo "    - Create a bot via @BotFather and re-run:  ./setup.sh"
+    echo ""
+  fi
+else
+  if [ -f .channels/telegram/access.json ]; then
+    echo "  Telegram is fully configured — ready to launch!"
+    echo ""
+  else
+    echo "  1. Pair your Telegram account (one-time):"
+    echo "     Start a plain Claude session:  claude"
+    echo "     Then run:  /telegram:access"
+    echo "     Exit when done."
+    echo ""
+  fi
+fi
+
+echo "  Launch:"
 echo "     ./start.sh"
 echo ""
-echo "  5. (Optional) Open this directory as an Obsidian vault"
-echo "     - All infrastructure is in dot-directories (invisible to Obsidian)"
-echo "     - Install Obsidian Web Clipper to capture articles into raw/"
+echo "  (Optional) Open this directory as an Obsidian vault"
+echo "     All infrastructure is in dot-directories (invisible to Obsidian)"
+echo "     Install Obsidian Web Clipper to capture articles into raw/"
 echo ""

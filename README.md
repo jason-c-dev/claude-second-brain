@@ -4,7 +4,7 @@
   <img src=".resources/claude-second-brain.png" alt="Claude managing knowledge via Telegram, wiki, and data — an effective team" width="400">
 </p>
 
-A complete autonomous [Claude Code](https://docs.anthropic.com/en/docs/claude-code) agent that maintains a personal knowledge base, runs overnight dream cycles, and stays reachable via Telegram — batteries included.
+A complete autonomous [Claude Code](https://code.claude.com/docs/en) agent that maintains a personal knowledge base, runs overnight dream cycles, and stays reachable via Telegram — batteries included.
 
 Built on the [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) pattern and inspired by Anthropic's [Auto Dream](https://github.com/anthropics/claude-code/blob/main/docs/auto-dream.md) memory system.
 
@@ -75,12 +75,24 @@ graph TD
 
 ## Prerequisites
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (Pro or Max subscription)
+- [Claude Code](https://code.claude.com/docs/en) (Pro or Max subscription)
 - [Bun](https://bun.sh) (JavaScript runtime)
 - Python 3 (for the Telegram gate hook — standard library only, no pip)
 - A Telegram bot token (from [@BotFather](https://t.me/BotFather))
-- [whisper.cpp](https://github.com/ggerganov/whisper.cpp) + [ffmpeg](https://ffmpeg.org/) (optional — for voice transcription)
 - [Obsidian](https://obsidian.md/) (optional but recommended)
+
+**Voice transcription** (optional — only needed for Telegram voice messages):
+
+```bash
+# macOS
+brew install ffmpeg
+brew install whisper-cpp
+
+# Download a model (~150MB)
+whisper-cli --download-model base.en
+```
+
+The model downloads to `/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin` on macOS. Set this path as `STT_MODEL` in `config.env`. For other platforms, see the [whisper.cpp README](https://github.com/ggerganov/whisper.cpp).
 
 ## Quick Start
 
@@ -99,23 +111,48 @@ cd my-brain && ./setup.sh
 Then:
 
 ```bash
-# 1. Edit config.env with your Telegram chat ID
+# 1. Edit config.env — set your Telegram chat ID
+#    (find it by messaging @userinfobot on Telegram)
+
 # 2. Set up Telegram (one-time — see below)
+
 # 3. Install cron jobs for overnight dreams
+(crontab -l 2>/dev/null; cat .config/crontab) | crontab -
+
 # 4. Launch:
 ./start.sh
 ```
 
 ### Telegram Setup
 
-Telegram integration requires a few one-time steps:
+`setup.sh` handles most of the Telegram configuration — it prompts for your bot token and chat ID, writes the credentials to the project-local state directory, and configures `.mcp.json` automatically.
 
-1. Create a bot via [@BotFather](https://t.me/BotFather) on Telegram
-2. Inside a Claude Code session: `/plugin install telegram`
-3. Then: `/telegram:access` to pair your bot
-4. See the [official guide](https://docs.anthropic.com/en/docs/claude-code/telegram) for details
+**Before running `setup.sh`**, you need two things:
 
-**Important — the dropped message fix:**
+1. **A bot token** — create a bot via [@BotFather](https://t.me/BotFather) on Telegram
+2. **Your chat ID** — message [@userinfobot](https://t.me/userinfobot) on Telegram
+
+`setup.sh` will prompt for both and configure everything, including the `access.json` allowlist. No need to run `/telegram:configure` or `/telegram:access` manually.
+
+**If the Telegram plugin isn't installed yet:**
+
+The plugin needs to be installed once before `setup.sh` can detect its path:
+
+1. Start a plain Claude session: `claude`
+2. Install the plugin: `/plugin install telegram`
+3. Exit the session
+4. Re-run `./setup.sh` — it will detect the plugin and configure `.mcp.json`
+
+See the [official guide](https://code.claude.com/docs/en/channels) for more details.
+
+**How it works under the hood:**
+
+- Bot token is stored in `.channels/telegram/.env` (project-local, not global)
+- Access config is stored in `.channels/telegram/access.json` (project-local)
+- `.mcp.json` points `TELEGRAM_STATE_DIR` to `.channels/telegram/` for per-instance isolation
+- `.mcp.json` is gitignored (it contains local paths). The template `.mcp.example.json` is committed for reference.
+
+**Why this matters — the dropped message fix:**
 
 The default `plugin:` delivery path drops messages that arrive while Claude is mid-response (no queue, no retry — [#1143](https://github.com/anthropics/claude-plugins-official/issues/1143)). This repo works around it:
 
@@ -134,7 +171,11 @@ git clone https://github.com/jason-c-dev/claude-second-brain.git work-brain && c
 git clone https://github.com/jason-c-dev/claude-second-brain.git research-brain && cd research-brain && ./setup.sh
 ```
 
-Change `WEBHOOK_PORT` in each instance's `config.env` to avoid port conflicts. Each instance needs its own Telegram bot token.
+Change `WEBHOOK_PORT` in each instance's `config.env` to avoid port conflicts. Each `./setup.sh` prompts for a bot token and chat ID independently, so each instance gets its own credentials stored in `.channels/telegram/`.
+
+**Running multiple instances simultaneously** requires a separate Telegram bot per instance (create one via @BotFather for each). If only one instance runs at a time, they can share the same bot.
+
+> **Note:** Don't use `/telegram:configure` for multi-instance setups — it writes to the global state directory (`~/.claude/channels/telegram/`) and will overwrite your other instance's bot token. `setup.sh` writes to the project-local state directory instead.
 
 ## How It Works
 
