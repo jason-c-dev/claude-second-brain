@@ -1,7 +1,7 @@
 # Claude Second Brain
 
 <p align="center">
-  <img src=".resources/claude-second-brain.png" alt="Claude managing knowledge via Telegram, wiki, and data — an effective team" width="400">
+  <img src="_resources/claude-second-brain.png" alt="Claude managing knowledge via Telegram, wiki, and data — an effective team" width="400">
 </p>
 
 A complete autonomous [Claude Code](https://code.claude.com/docs/en) agent that maintains a personal knowledge base, runs overnight dream cycles, and stays reachable via Telegram — batteries included.
@@ -201,7 +201,7 @@ graph TD
 The wiki is a *compounding artifact*. Every source makes it richer. Every query that reveals a gap gets the gap filled. The wiki doesn't just store knowledge — it gets better at storing knowledge.
 
 <p align="center">
-  <img src=".resources/claude-librarian.png" alt="Claude as librarian — check in books, search, lend, update wiki" width="450">
+  <img src="_resources/claude-librarian.png" alt="Claude as librarian — check in books, search, lend, update wiki" width="450">
 </p>
 
 Three layers:
@@ -214,7 +214,7 @@ Every query checks the wiki first, falls back to `raw/`, then improves the wiki 
 ### Dream Cycles
 
 <p align="center">
-  <img src=".resources/claude-dreaming.png" alt="Claude dreaming under a tree — consolidating memories overnight" width="300">
+  <img src="_resources/claude-dreaming.png" alt="Claude dreaming under a tree — consolidating memories overnight" width="300">
 </p>
 
 Two overnight cron jobs trigger dream cycles — think of them as REM sleep for your AI:
@@ -225,7 +225,7 @@ Two overnight cron jobs trigger dream cycles — think of them as REM sleep for 
 Both follow the same four phases that Anthropic's Auto Dream uses: **Orient → Gather → Consolidate → Prune**.
 
 <p align="center">
-  <img src=".resources/claude-dream-process.png" alt="The four dream phases — Orient, Gather, Consolidate, Prune and Index" width="500">
+  <img src="_resources/claude-dream-process.png" alt="The four dream phases — Orient, Gather, Consolidate, Prune and Index" width="500">
 </p>
 
 ```mermaid
@@ -292,14 +292,25 @@ Content enters `raw/` several ways:
 | **Daily notes** | Configure Obsidian daily notes to save to `raw/` |
 
 **Web Clipper setup:**
+
 1. Install [Obsidian Web Clipper](https://obsidian.md/clipper) browser extension
-2. Set vault to this directory
-3. Set save folder to `raw/`
-4. Configure the template to include frontmatter (title, source URL, date, tags)
+2. Set the default vault to this directory
+3. Set note location to `raw`
+4. Set note name to `{{title}}`
+
+<p align="center">
+  <img src="_resources/obsidian-web-clipper-settings.png" alt="Obsidian Web Clipper settings — note location set to raw" width="400">
+</p>
+
+One click from any browser tab — the article lands in `raw/`, the next dream compiles it into the wiki.
 
 ## Obsidian Integration
 
 This repo is designed to be opened directly as an Obsidian vault. Clone it, open it in Obsidian, and everything works:
+
+<p align="center">
+  <img src="_resources/graph-view.png" alt="Obsidian graph view — wiki articles as connected nodes, infrastructure invisible" width="500">
+</p>
 
 - `raw/`, `wiki/`, and `output/` appear in the vault — your knowledge content
 - Wiki `[[links]]` render as clickable graph connections
@@ -307,6 +318,21 @@ This repo is designed to be opened directly as an Obsidian vault. Clone it, open
 - No JS files, no `node_modules`, no config files polluting your graph view
 
 The dot-directory convention is deliberate: the system lives inside the vault without polluting it. You see your knowledge. Obsidian sees your knowledge. The plumbing is hidden.
+
+### Recommended community plugin: Local Images Plus
+
+[Local Images Plus](https://github.com/Sergei-Korneev/obsidian-local-images-plus) downloads external images from clipped articles and stores them locally in the vault. Without it, Web Clipper articles reference remote URLs that may break over time.
+
+Install from Obsidian Community Plugins, then set the media folder to `_resources/${notename}`:
+
+<p align="center">
+  <img src="_resources/local-images-plus.png" alt="Local Images Plus plugin installed" width="450">
+</p>
+<p align="center">
+  <img src="_resources/local-images-plus-settings.png" alt="Local Images Plus settings — media folder set to _resources/${notename}" width="450">
+</p>
+
+This keeps images organised per-article inside `_resources/` and ensures clipped content is fully self-contained.
 
 **Optional:** `obsidian` CLI (`npm install -g obsidian-cli`) enables search, daily notes, and append operations from the terminal. Requires Obsidian to be running. Claude falls back to direct file writes if unavailable.
 
