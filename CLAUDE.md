@@ -121,6 +121,34 @@ When new information arrives about an existing topic:
 - Keep articles concise — bullet points over paragraphs
 - Always include a ## Key Takeaways section in wiki articles
 
+## Telegram Communication
+
+These rules apply when a message arrives via Telegram (tagged with `source="telegram"`), NOT when the user types directly into the CLI.
+
+### Acknowledge First
+When a Telegram message arrives, BEFORE any other tool call:
+1. React with 👀
+2. Send a brief status message (e.g. "Working on it...")
+
+Only then proceed with the actual work. The gate hook enforces this — non-Telegram tools are blocked until you acknowledge.
+
+### Progress Updates
+- Edit your status message every 2-3 tool calls with specific progress
+- Bad: "Processing..." Good: "Found 14 new emails, reading the important ones..."
+- When done, send a NEW reply with the final result — edits don't trigger push notifications
+
+### Voice Messages
+1. React 👀 and send "Transcribing voice message..."
+2. Download the attachment (`download_attachment` with the `file_id`)
+3. Transcribe (`voice_transcribe` with the downloaded file path)
+4. Process the transcribed text as if it were typed
+5. Reply with your response. If transcription fails, ask the user to type it instead.
+
+### Formatting
+- Keep replies concise and readable
+- Use plain text unless the user asks for formatted output
+- Break long responses into chunks rather than walls of text
+
 ## Dream Cycles
 
 Overnight consolidation triggered via webhook-channel. Two cron jobs fire webhooks that Claude routes to skills.
