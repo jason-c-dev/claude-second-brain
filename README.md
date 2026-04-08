@@ -1,5 +1,11 @@
 # Claude Second Brain
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Opus%204.6-blueviolet)](https://code.claude.com/docs/en)
+[![Obsidian](https://img.shields.io/badge/Obsidian-Compatible-7c3aed)](https://obsidian.md/)
+[![Telegram](https://img.shields.io/badge/Telegram-Integrated-26A5E4)](https://code.claude.com/docs/en/channels)
+[![whisper.cpp](https://img.shields.io/badge/Voice-whisper.cpp-green)](https://github.com/ggerganov/whisper.cpp)
+
 <p align="center">
   <img src="_resources/claude-second-brain.png" alt="Claude managing knowledge via Telegram, wiki, and data — an effective team" width="400">
 </p>
