@@ -176,9 +176,4 @@ If dreams stop firing, verify:
 
 ## Obsidian Integration
 
-This project is designed to work as an Obsidian vault. All infrastructure lives in dot-directories (`.channels/`, `.tools/`, `.hooks/`, `.claude/`, `.config/`) so Obsidian ignores them — no JS files, no node_modules, no config polluting the graph view.
-
-If using the `obsidian` CLI (install via `npm install -g obsidian-cli`):
-- Specify your vault name in commands (e.g., `obsidian vault="MyVault" read file="Note Name"`)
-- Run `obsidian help` for full command reference
-- Fallback: if the CLI is unresponsive (Obsidian not running), write .md files directly
+This repo is designed to be opened directly as an Obsidian vault. All infrastructure lives in dot-directories (`.channels/`, `.tools/`, `.hooks/`, `.claude/`, `.config/`) so Obsidian ignores them — only knowledge content appears in the graph view.

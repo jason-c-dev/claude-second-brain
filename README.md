@@ -299,40 +299,27 @@ Content enters `raw/` several ways:
 
 ## Obsidian Integration
 
-Two modes:
+This repo is designed to be opened directly as an Obsidian vault. Clone it, open it in Obsidian, and everything works:
 
-### Repo IS the Vault (Default)
-
-The simplest setup. Clone the repo, open it as an Obsidian vault. Everything works:
-
-- `raw/`, `wiki/`, and `output/` appear in the vault
+- `raw/`, `wiki/`, and `output/` appear in the vault — your knowledge content
 - Wiki `[[links]]` render as clickable graph connections
-- All infrastructure (`.channels/`, `.tools/`, `.hooks/`, `.claude/`, `.config/`) is invisible — dot-directories are hidden by default in Obsidian
-- No JS files, no `node_modules`, no config polluting your graph view
+- All infrastructure lives in dot-directories (`.channels/`, `.tools/`, `.hooks/`, `.claude/`, `.config/`) — invisible to Obsidian by default
+- No JS files, no `node_modules`, no config files polluting your graph view
 
-### Repo is Separate
+The dot-directory convention is deliberate: the system lives inside the vault without polluting it. You see your knowledge. Obsidian sees your knowledge. The plumbing is hidden.
 
-If you already have a vault and want to keep the repo elsewhere:
-
-1. Set `OBSIDIAN_VAULT` in `config.env` to your vault path
-2. Set `OBSIDIAN_VAULT_NAME` to the name registered in Obsidian
-3. Claude will read/write to the vault path instead of relative paths
-
-**Optional dependencies:**
-- `obsidian` CLI (`npm install -g obsidian-cli`) — enables search, daily notes, append operations from the terminal. Requires Obsidian to be running. Claude falls back to direct file writes if unavailable.
+**Optional:** `obsidian` CLI (`npm install -g obsidian-cli`) enables search, daily notes, and append operations from the terminal. Requires Obsidian to be running. Claude falls back to direct file writes if unavailable.
 
 ## Configuration Reference
 
 | Variable | File | Default | Description |
 |----------|------|---------|-------------|
 | `TELEGRAM_CHAT_ID` | config.env | — | Your Telegram chat ID for dream reports |
-| `WEBHOOK_PORT` | config.env | 8790 | Webhook HTTP server port |
-| `STT_MODEL` | config.env | — | Path to whisper.cpp GGML model |
-| `STT_PATH` | config.env | `whisper-cli` | Whisper binary name |
-| `OBSIDIAN_VAULT` | config.env | (repo dir) | Obsidian vault path (if separate) |
-| `OBSIDIAN_VAULT_NAME` | config.env | — | Vault name in Obsidian |
-| Cron schedule | .config/crontab | 2:03/3:33 AM | Dream cycle times |
-| Webhook host | .mcp.json env | 127.0.0.1 | Webhook bind address |
+| `TELEGRAM_BOT_TOKEN` | .channels/telegram/.env | — | Bot token from @BotFather |
+| `WEBHOOK_PORT` | .mcp.json | 8790 | Webhook HTTP server port |
+| `STT_MODEL` | .mcp.json | — | Path to whisper.cpp GGML model |
+| `STT_PATH` | .mcp.json | `whisper-cli` | Whisper binary name |
+| Cron schedule | auto-installed | 2:03/3:33 AM | Dream cycle times (`crontab -e` to change) |
 
 ## The Biological Memory Model
 
