@@ -7,5 +7,6 @@ config.env
 .claude/settings.local.json
 .config/compiled-raw.txt
 .obsidian/
+.channels/telegram/inbox/
 output/
 .DS_Store
