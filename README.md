@@ -1,5 +1,9 @@
 # Claude Second Brain
 
+<p align="center">
+  <img src=".resources/claude-second-brain.png" alt="Claude managing knowledge via Telegram, wiki, and data — an effective team" width="400">
+</p>
+
 A complete autonomous [Claude Code](https://docs.anthropic.com/en/docs/claude-code) agent that maintains a personal knowledge base, runs overnight dream cycles, and stays reachable via Telegram — batteries included.
 
 Built on the [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) pattern and inspired by Anthropic's [Auto Dream](https://github.com/anthropics/claude-code/blob/main/docs/auto-dream.md) memory system.
@@ -19,35 +23,42 @@ All infrastructure lives in dot-directories (`.channels/`, `.tools/`, `.hooks/`,
 
 ## Architecture
 
-```
-┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
-│  Telegram    │────▶│  Claude Code  │────▶│  wiki/          │
-│  (text/voice)│     │  + CLAUDE.md  │     │  (curated KB)   │
-└─────────────┘     │  + skills     │     └─────────────────┘
-                    │  + subagents  │
-┌─────────────┐     │              │     ┌─────────────────┐
-│  Cron        │────▶│              │────▶│  memory/        │
-│  (2:03/3:33) │     │              │     │  (Claude's own)  │
-└──────┬──────┘     └──────────────┘     └─────────────────┘
-       │                   ▲
-       ▼                   │
-┌─────────────┐     ┌──────────────┐
-│  webhook-    │────▶│  MCP server  │
-│  channel     │     │  (push IN)   │
-│  :8790       │     └──────────────┘
-└─────────────┘
+The system has two modes: **daytime** (interactive, Telegram-driven) and **overnight** (autonomous, cron-driven). Both share the same infrastructure.
 
-┌─────────────┐     ┌──────────────┐
-│  Voice msg   │────▶│  voice-tools │
-│  (Telegram)  │     │  (whisper.cpp)│
-└─────────────┘     └──────────────┘
+```mermaid
+graph TD
+    subgraph "Daytime — Waking State"
+        TG["Telegram — text, voice, images"] -->|MCP push| CC["Claude Code + CLAUDE.md + skills"]
+        VOICE["Voice message"] -->|download| VT["voice-tools — whisper.cpp"]
+        VT -->|transcribed text| CC
+        CC -->|reply| TG
+        CC -->|"wiki first, raw fallback"| WIKI["wiki/ — curated KB"]
+        CC -->|"gap found, update"| WIKI
+    end
+
+    subgraph "Overnight — REM Sleep"
+        CRON["crontab — 2:03 / 3:33 AM"] -->|curl POST| WH["webhook-channel :8790"]
+        WH -->|MCP notification| CC
+        CC -->|"spawn with skill prompt"| SUB["Subagent — fresh context"]
+        SUB -->|"inherits"| SCHEMA["CLAUDE.md conventions"]
+        SUB -->|"reads/writes"| MEM["memory/ — Claude's own"]
+        SUB -->|"reads/writes"| WIKI
+        SUB -->|"returns summary"| CC
+        CC -->|"morning report"| TG
+    end
+
+    style TG fill:#f9f,stroke:#333
+    style WIKI fill:#9f9,stroke:#333
+    style SCHEMA fill:#e6f3ff,stroke:#333
+    style SUB fill:#9f9,stroke:#333
+    style CRON fill:#ff9,stroke:#333
 ```
 
 **How events flow:**
 - **Telegram messages** arrive via the Telegram MCP server (push IN to the session)
 - **Dream cycles** fire via cron → curl → webhook-channel → MCP notification → Claude routes to skill
-- **Skills** spawn subagents with fresh context (no session bleed) to do the actual work
-- **Results** go to Telegram (reports) and wiki/log.md (audit trail)
+- **Skills** spawn subagents with fresh context (no session bleed) to do the actual work — the subagent inherits CLAUDE.md conventions but has no session history to be biased by
+- **Results** go to Telegram (morning reports) and wiki/log.md (audit trail)
 
 ## Features
 
@@ -129,36 +140,81 @@ Change `WEBHOOK_PORT` in each instance's `config.env` to avoid port conflicts. E
 
 ### Wiki System
 
-The wiki follows the [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) pattern:
+The wiki follows the [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) pattern: instead of treating your LLM as a search engine that re-derives answers from scratch every time, treat it as a *librarian*. Give it a structured knowledge base. Let it maintain it.
 
+```mermaid
+graph TD
+    Sources["Raw Sources — articles, notes, URLs"] -->|"drop in raw/"| LLM["LLM Librarian"]
+    Schema["CLAUDE.md — schema + conventions"] -->|"instructs"| LLM
+    LLM -->|"compile"| Wiki["Curated Wiki — cross-linked articles"]
+    Query["User Query"] -->|"ask"| LLM
+    LLM -->|"check shelves first"| Wiki
+    Wiki -->|"gap found — search raw/"| LLM
+    LLM -->|"update article"| Wiki
+
+    style Sources fill:#f9f,stroke:#333
+    style Wiki fill:#9f9,stroke:#333
+    style Schema fill:#ff9,stroke:#333
+```
+
+The wiki is a *compounding artifact*. Every source makes it richer. Every query that reveals a gap gets the gap filled. The wiki doesn't just store knowledge — it gets better at storing knowledge.
+
+<p align="center">
+  <img src=".resources/claude-librarian.png" alt="Claude as librarian — check in books, search, lend, update wiki" width="450">
+</p>
+
+Three layers:
 1. **Raw sources** land in `raw/` — articles, notes, conversation captures, web clips
 2. **Claude compiles** them into curated wiki articles in `wiki/` — cross-linked, structured, with key takeaways
 3. **CLAUDE.md** defines the schema — topic structure, naming conventions, article lifecycle, contradiction handling
-4. **Every query** checks the wiki first, falls back to raw/, then improves the wiki so the next query doesn't have to
-5. **The manifest** (`.config/compiled-raw.txt`) tracks which raw files have been compiled — prevents reprocessing
+
+Every query checks the wiki first, falls back to `raw/`, then improves the wiki so the next query doesn't have to. The manifest (`.config/compiled-raw.txt`) tracks which raw files have been compiled — O(1) inventory, not O(n) log scanning.
 
 ### Dream Cycles
 
-Two overnight cron jobs trigger dream cycles:
+<p align="center">
+  <img src=".resources/claude-dreaming.png" alt="Claude dreaming under a tree — consolidating memories overnight" width="300">
+</p>
 
-- **2:03 AM — Memory dream** (`/dream-memory`): A subagent reviews Claude's session memories and consolidates them — merging duplicates, pruning stale entries, updating the index
-- **3:33 AM — Wiki dream** (`/dream-wiki`): A subagent compiles any new raw sources into wiki articles
+Two overnight cron jobs trigger dream cycles — think of them as REM sleep for your AI:
 
-**How it works:**
+- **2:03 AM — Memory dream** (`/dream-memory`): consolidates Claude's session memories — merging duplicates, pruning stale entries, updating the index
+- **3:33 AM — Wiki dream** (`/dream-wiki`): compiles any new raw sources into wiki articles
 
+Both follow the same four phases that Anthropic's Auto Dream uses: **Orient → Gather → Consolidate → Prune**.
+
+<p align="center">
+  <img src=".resources/claude-dream-process.png" alt="The four dream phases — Orient, Gather, Consolidate, Prune and Index" width="500">
+</p>
+
+```mermaid
+graph TD
+    subgraph "Overnight Dream Cycle"
+        Cron["crontab"] -->|"curl :8790"| WH["Webhook Channel"]
+        WH -->|"push event"| Orch["Orchestrator — main session"]
+        Orch -->|"spawn with skill prompt"| Sub["Subagent — fresh context"]
+        Sub -->|"inherits"| Schema["CLAUDE.md conventions"]
+    end
+
+    subgraph "Dream Work — fresh context"
+        Sub -->|"reads/writes"| Mem["Memory Files or Wiki Articles"]
+        Sub -->|"returns summary"| Orch
+    end
+
+    subgraph "Reporting"
+        Orch -->|"log"| Log["wiki/log.md"]
+        Orch -->|"notify"| TG["Telegram — morning report"]
+    end
+
+    style Cron fill:#ff9,stroke:#333
+    style Sub fill:#9f9,stroke:#333
+    style Schema fill:#e6f3ff,stroke:#333
+    style TG fill:#f9f,stroke:#333
 ```
-cron (2:03 AM)
-  → curl POST http://127.0.0.1:8790/dream-memory
-    → webhook-channel receives HTTP request
-      → pushes MCP notification into Claude session
-        → Claude routes to /dream-memory skill
-          → skill spawns subagent with fresh context
-            → subagent consolidates memories
-              → orchestrator logs to wiki/log.md
-                → orchestrator sends report to Telegram
-```
 
-**Why subagents?** The orchestrator-subagent pattern avoids the self-evaluation trap — an agent reviewing its own memories in the same context that created them. Fresh context means honest evaluation. The subagent inherits CLAUDE.md conventions but has no session history to be biased by.
+**Why subagents?** Each dream spawns a subagent with fresh context. The orchestrator (the main Claude session) doesn't do the dream work itself — it delegates. This avoids the self-evaluation trap: an agent reviewing its own memories in the same context that created them will rationalise keeping bad entries. A fresh subagent starts clean — no session history, no accumulated biases from the day's conversations. It inherits CLAUDE.md (so it knows the *rules*), but it doesn't know the *day*. Separation creates scepticism.
+
+This is the evaluator principle: the skill says *what* to do, CLAUDE.md says *how things work here*, and the subagent gets both without the baggage.
 
 ### Voice Transcription
 
@@ -239,18 +295,45 @@ If you already have a vault and want to keep the repo elsewhere:
 
 ## The Biological Memory Model
 
-The system mirrors how biological memory works:
+The system maps onto biological memory more closely than you'd expect. Not as a metaphor — as the actual architecture.
+
+```mermaid
+graph TD
+    subgraph "Daytime — Waking State"
+        Input["Sensory Input — raw/ sources"] -->|"captured"| STM["Short-Term — raw/, unprocessed"]
+        Query["User Query"] -->|"retrieval practice"| Wiki
+        Wiki["Long-Term Memory — wiki/, cross-linked"] -->|"fast retrieval"| Answer["Answer"]
+        STM -->|"wiki miss, search deeper"| Wiki
+        Answer -->|"gap found, update wiki"| Wiki
+    end
+
+    subgraph "Overnight — REM Sleep"
+        Dream1["Memory Dream, 2:03 AM"] -->|"prune, merge"| AgentMem["Agent Memory"]
+        Dream2["Wiki Dream, 3:33 AM"] -->|"compile, cross-link"| Wiki
+        STM -->|"compile new sources"| Dream2
+    end
+
+    Wiki -.->|"stronger with each retrieval"| Wiki
+
+    style Input fill:#f9f,stroke:#333
+    style STM fill:#ffd,stroke:#333
+    style Wiki fill:#9f9,stroke:#333
+    style Dream1 fill:#e6f3ff,stroke:#333
+    style Dream2 fill:#e6f3ff,stroke:#333
+```
 
 | Biological | Digital |
 |-----------|---------|
-| Sensory input | `raw/` — articles, notes, clips |
-| Active study | Compile workflow — reading, synthesizing, cross-linking |
+| Sensory input | `raw/` — articles, notes, clips arrive continuously |
+| Short-term memory | Uncompiled raw files — captured but not yet integrated |
+| Active study | Compile workflow — reading, synthesising, cross-linking |
 | Long-term memory | `wiki/` — curated, structured, retrievable |
-| REM sleep | Dream cycles — overnight consolidation |
+| REM sleep | Dream cycles — overnight consolidation by subagents |
 | Retrieval practice | Wiki queries — each retrieval strengthens the encoding |
 | Synaptic reinforcement | Query fallback loop — wiki miss → raw hit → wiki update |
+| Unrehearsed memories | Raw files that never get queried — accessible, but not integrated |
 
-This isn't a metaphor. It's the actual architecture.
+The feedback loop is self-improving. Better wiki leads to faster answers. Faster answers lead to more queries. More queries lead to more consolidation. More consolidation leads to a better wiki. And the dreams keep the whole thing from decaying overnight.
 
 ## Troubleshooting
 
