@@ -276,6 +276,12 @@ else
   fi
 fi
 
+echo "  Install Obsidian Skills plugin (required for proper wiki links):"
+echo "     Start a plain Claude session:  claude"
+echo "     /plugin marketplace add kepano/obsidian-skills"
+echo "     /plugin install obsidian@obsidian-skills"
+echo "     Exit the session."
+echo ""
 echo "  Launch:"
 echo "     ./start.sh"
 echo ""

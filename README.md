@@ -330,7 +330,20 @@ This repo is designed to be opened directly as an Obsidian vault. Clone it, open
 
 The dot-directory convention is deliberate: the system lives inside the vault without polluting it. You see your knowledge. Obsidian sees your knowledge. The plumbing is hidden.
 
-### Recommended community plugin: Local Images Plus
+### Required: Obsidian Skills plugin for Claude Code
+
+[obsidian-skills](https://github.com/kepano/obsidian-skills) (by Obsidian's creator, kepano) teaches Claude how to work with Obsidian-flavoured markdown — `[[wikilinks]]`, embeds, callouts, properties, and vault-specific syntax. **Without this plugin, Claude will create standard markdown links that don't work in Obsidian.**
+
+Install inside a Claude Code session:
+
+```
+/plugin marketplace add kepano/obsidian-skills
+/plugin install obsidian@obsidian-skills
+```
+
+This is the difference between Claude treating your vault as a folder of markdown files and Claude understanding it's an Obsidian vault with its own link conventions.
+
+### Recommended: Local Images Plus
 
 [Local Images Plus](https://github.com/Sergei-Korneev/obsidian-local-images-plus) downloads external images from clipped articles and stores them locally in the vault. Without it, Web Clipper articles reference remote URLs that may break over time.
 
