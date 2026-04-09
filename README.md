@@ -89,6 +89,9 @@ graph TD
   - `curl -fsSL https://bun.sh/install | bash`
 - Python 3 (for the Telegram gate hook — standard library only, no pip)
 - A Telegram bot token (from [@BotFather](https://t.me/BotFather))
+- [obsidian-skills](https://github.com/kepano/obsidian-skills) — Claude Code plugin that teaches Claude Obsidian-flavoured markdown (`[[wikilinks]]`, embeds, callouts, properties). Without it, Claude creates standard markdown links that don't work in Obsidian.
+  - `/plugin marketplace add kepano/obsidian-skills`
+  - `/plugin install obsidian@obsidian-skills`
 - [Obsidian](https://obsidian.md/) (optional but recommended)
 
 **Voice transcription** (optional — only needed for Telegram voice messages):
@@ -329,19 +332,6 @@ This repo is designed to be opened directly as an Obsidian vault. Clone it, open
 - No JS files, no `node_modules`, no config files polluting your graph view
 
 The dot-directory convention is deliberate: the system lives inside the vault without polluting it. You see your knowledge. Obsidian sees your knowledge. The plumbing is hidden.
-
-### Required: Obsidian Skills plugin for Claude Code
-
-[obsidian-skills](https://github.com/kepano/obsidian-skills) (by Obsidian's creator, kepano) teaches Claude how to work with Obsidian-flavoured markdown — `[[wikilinks]]`, embeds, callouts, properties, and vault-specific syntax. **Without this plugin, Claude will create standard markdown links that don't work in Obsidian.**
-
-Install inside a Claude Code session:
-
-```
-/plugin marketplace add kepano/obsidian-skills
-/plugin install obsidian@obsidian-skills
-```
-
-This is the difference between Claude treating your vault as a folder of markdown files and Claude understanding it's an Obsidian vault with its own link conventions.
 
 ### Recommended: Local Images Plus
 
