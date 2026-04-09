@@ -223,12 +223,12 @@ if command -v whisper-cli &>/dev/null; then
   echo "      whisper-cli found."
 elif command -v ffmpeg &>/dev/null; then
   echo "      ffmpeg found but whisper-cli not installed."
-  echo "      To enable voice: brew install whisper-cpp && whisper-cli --download-model base.en"
+  echo "      To enable voice: brew install whisper-cpp && curl -L -o /opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin"
 else
   echo "      ffmpeg and whisper-cli not found."
   echo "      Voice transcription requires both. Install if needed:"
   echo "        brew install ffmpeg whisper-cpp"
-  echo "        whisper-cli --download-model base.en"
+  echo "        curl -L -o /opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin"
 fi
 
 # ── Done ─────────────────────────────────────────────────────────────

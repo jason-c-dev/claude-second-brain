@@ -98,10 +98,12 @@ brew install ffmpeg
 brew install whisper-cpp
 
 # Download a model (~150MB)
-whisper-cli --download-model base.en
+mkdir -p /opt/homebrew/share/whisper-cpp/models
+curl -L -o /opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin \
+  "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin"
 ```
 
-The model downloads to `/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin` on macOS. For other platforms, see the [whisper.cpp README](https://github.com/ggerganov/whisper.cpp).
+The model path is `/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin` on macOS. For other platforms, see the [whisper.cpp README](https://github.com/ggerganov/whisper.cpp).
 
 ## Quick Start
 
