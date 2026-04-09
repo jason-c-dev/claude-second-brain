@@ -1,5 +1,7 @@
 # Knowledge Base — Vault Conventions
 
+This project is an Obsidian vault. Use Obsidian-flavoured markdown for all files — `[[wikilinks]]`, properties, callouts, and embeds. Load the `obsidian-markdown` skill if available.
+
 ## Vault Structure
 - /raw — inbox for source material, conversation captures, and clipped articles (input zone; sources are immutable once filed — Claude reads but never modifies them)
 - /wiki — curated knowledge base, maintained by Claude as librarian (see Wiki System)
