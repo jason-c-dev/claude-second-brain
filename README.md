@@ -83,7 +83,7 @@ graph TD
 
 > Install instructions below are for macOS. For other platforms, see the linked documentation for each component.
 
-- [Claude Code](https://code.claude.com/docs/en) — works with any model configuration, but consider Pro, Max, or Team plans for fixed costs vs API consumption
+- [Claude Code](https://code.claude.com/docs/en) — requires claude.ai login (Pro, Max, or Team/Enterprise). API key auth is not supported as [Channels require claude.ai login](https://code.claude.com/docs/en/channels-reference). Team and Enterprise organisations must explicitly enable Channels.
   - `npm install -g @anthropic-ai/claude-code`
 - [Bun](https://bun.sh) (JavaScript runtime)
   - `curl -fsSL https://bun.sh/install | bash`
