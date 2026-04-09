@@ -462,10 +462,10 @@ When in doubt, ask Claude — it can read `.mcp.json` and diagnose the issue.
 
 ## Background
 
-This project was built as part of a blog series on autonomous AI agents:
+This project was built as part of the "Dreaming AI" blog series:
 
-- Part 1: Building the wiki system and dream cycles
-- Part 2: Nightmare scenarios, subagent architecture, and the biological memory model
+- [Part 1: Your AI Should Dream. Mine Does.](https://medium.com/@jason.croucher/part-1-of-dreaming-ai-your-ai-should-dream-mine-does-fa47ed08e742) — the Karpathy wiki pattern, Auto Dream, and building the dream cycles
+- [Part 2: The Dream Worked. So I Built a Brain.](https://medium.com/@jason.croucher/part-2-of-dreaming-ai-the-dream-worked-so-i-built-a-brain-9a80b9fca217) — self-evaluation trap, subagent architecture, biological memory model, and this repo
 
 The codebase draws from:
 - [claude-channels](https://github.com/jason-c-dev/claude-channels) — webhook-channel, voice-tools, and Telegram gate
