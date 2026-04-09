@@ -6,6 +6,9 @@ config.env
 .claude/worktrees/
 .claude/settings.local.json
 .config/compiled-raw.txt
+wiki/*
+!wiki/_master-index.md
+!wiki/log.md
 .obsidian/
 .channels/telegram/inbox/
 output/
