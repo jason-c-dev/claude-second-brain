@@ -81,8 +81,12 @@ graph TD
 
 ## Prerequisites
 
-- [Claude Code](https://code.claude.com/docs/en) (Pro or Max subscription)
+> Install instructions below are for macOS. For other platforms, see the linked documentation for each component.
+
+- [Claude Code](https://code.claude.com/docs/en) — works with any model configuration, but consider Pro, Max, or Team plans for fixed costs vs API consumption
+  - `npm install -g @anthropic-ai/claude-code`
 - [Bun](https://bun.sh) (JavaScript runtime)
+  - `curl -fsSL https://bun.sh/install | bash`
 - Python 3 (for the Telegram gate hook — standard library only, no pip)
 - A Telegram bot token (from [@BotFather](https://t.me/BotFather))
 - [Obsidian](https://obsidian.md/) (optional but recommended)
@@ -90,7 +94,6 @@ graph TD
 **Voice transcription** (optional — only needed for Telegram voice messages):
 
 ```bash
-# macOS
 brew install ffmpeg
 brew install whisper-cpp
 
@@ -98,7 +101,7 @@ brew install whisper-cpp
 whisper-cli --download-model base.en
 ```
 
-The model downloads to `/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin` on macOS. Set this path as `STT_MODEL` in `config.env`. For other platforms, see the [whisper.cpp README](https://github.com/ggerganov/whisper.cpp).
+The model downloads to `/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin` on macOS. For other platforms, see the [whisper.cpp README](https://github.com/ggerganov/whisper.cpp).
 
 ## Quick Start
 
