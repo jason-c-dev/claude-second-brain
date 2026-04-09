@@ -397,6 +397,24 @@ The feedback loop is self-improving. Better wiki leads to faster answers. Faster
 
 ## Troubleshooting
 
+**First thing to check — MCP server status:**
+
+Run `/mcp` inside a Claude session. You should see all three servers connected:
+
+```
+  telegram · ✔ connected
+  voice-tools · ✔ connected
+  webhook-channel · ✔ connected
+```
+
+If **webhook-channel** failed: the port in `.mcp.json` is probably already in use by another instance. Change `WEBHOOK_PORT` to a different value.
+
+If **telegram** failed: the plugin path in `.mcp.json` doesn't match your installation. Check `ls ~/.claude/plugins/cache/claude-plugins-official/telegram/` and update the path. Or re-run `./setup.sh` to auto-detect it.
+
+If **voice-tools** failed: the `STT_MODEL` path in `.mcp.json` points to a model file that doesn't exist. Check the path or run `whisper-cli --download-model base.en` to install one.
+
+When in doubt, ask Claude — it can read `.mcp.json` and diagnose the issue.
+
 **Dreams not firing:**
 1. Is Claude running? (`./start.sh` must be active)
 2. Is the webhook listening? `curl http://127.0.0.1:8790/health`
