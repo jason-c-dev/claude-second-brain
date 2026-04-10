@@ -20,7 +20,10 @@ if [ -f config.env ]; then
   source config.env
 fi
 
-claude \
-  --dangerously-load-development-channels server:telegram \
-  --dangerously-load-development-channels server:webhook-channel \
-  --permission-mode auto
+CHANNELS="--dangerously-load-development-channels server:telegram --dangerously-load-development-channels server:webhook-channel"
+
+if [ "$1" = "--dangerously" ]; then
+  claude $CHANNELS --dangerously-skip-permissions
+else
+  claude $CHANNELS
+fi

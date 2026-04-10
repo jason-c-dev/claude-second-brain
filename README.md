@@ -138,6 +138,9 @@ Then:
 
 # 4. Launch:
 ./start.sh
+
+# Or with no permission prompts (use with caution):
+./start.sh --dangerously
 ```
 
 ### Telegram Setup
@@ -176,6 +179,7 @@ The default `plugin:` delivery path drops messages that arrive while Claude is m
 - Telegram is registered as an MCP server in `.mcp.json` (not as a channel plugin)
 - `start.sh` uses `--dangerously-load-development-channels server:telegram` (not `plugin:telegram`)
 - Each channel needs its own `--dangerously-load-development-channels` flag (comma-separated does NOT work)
+- `./start.sh --dangerously` adds `--dangerously-skip-permissions` for fully autonomous operation (no permission prompts). Default launch has no permission flag — Claude uses its standard permission mode.
 
 This gives reliable message delivery — every message arrives, even during long operations.
 
