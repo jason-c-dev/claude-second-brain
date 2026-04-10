@@ -77,6 +77,10 @@ def handle_pre_tool_use(data):
         })
         sys.exit(0)
 
+    # Always allow ToolSearch — needed to load deferred telegram tool schemas
+    if tool_name == "ToolSearch":
+        sys.exit(0)
+
     # Gate open — allow everything
     if gate == "open":
         sys.exit(0)
