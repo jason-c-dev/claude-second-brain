@@ -5,6 +5,8 @@ config.env
 .channels/telegram/access.json
 .claude/worktrees/
 .claude/settings.local.json
+.agents/
+.claude/skills/skill-creator
 .config/compiled-raw.txt
 wiki/*
 !wiki/_master-index.md

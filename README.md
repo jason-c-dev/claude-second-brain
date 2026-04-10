@@ -78,6 +78,7 @@ graph TD
 | **Obsidian Compatible** | Dot-directories invisible to Obsidian. Wiki links render as graph. |
 | **Subagent Architecture** | Dreams use fresh-context subagents to avoid the self-evaluation trap |
 | **Compiled Manifest** | `.config/compiled-raw.txt` prevents reprocessing — O(1) inventory, not O(n) log scanning |
+| **Skill Creator** | Anthropic's official skill for building and iterating on skills — the second brain can improve its own capabilities |
 
 ## Prerequisites
 
@@ -92,6 +93,8 @@ graph TD
 - [obsidian-skills](https://github.com/kepano/obsidian-skills) — Claude Code plugin that teaches Claude Obsidian-flavoured markdown (`[[wikilinks]]`, embeds, callouts, properties). Without it, Claude creates standard markdown links that don't work in Obsidian.
   - `/plugin marketplace add kepano/obsidian-skills`
   - `/plugin install obsidian@obsidian-skills`
+- [skill-creator](https://github.com/anthropics/skills) — Anthropic's official skill for building, testing, and iterating on skills. Enables the second brain to improve its own capabilities based on your needs.
+  - `npx skills add anthropics/skills@skill-creator`
 - [Obsidian](https://obsidian.md/) (optional but recommended)
 
 **Voice transcription** (optional — only needed for Telegram voice messages):
@@ -462,6 +465,19 @@ When in doubt, ask Claude — it can read `.mcp.json` and diagnose the issue.
 
 **Manifest out of sync:**
 - If articles exist in wiki/ but raw files keep being reprocessed, check `.config/compiled-raw.txt` for filename mismatches (watch for Unicode apostrophes vs ASCII)
+
+## Self-Improvement
+
+The second brain isn't a static system — it's designed to improve itself based on your needs. The [skill-creator](https://github.com/anthropics/skills) from Anthropic enables this: you can ask Claude to create new skills, test them with eval loops, and iterate until they work the way you want.
+
+The dream cycles, wiki compilation, and Telegram communication are all implemented as skills in `.claude/skills/`. If they're not working the way you need, you can use the skill-creator to refine them rather than editing SKILL.md files by hand. The workflow:
+
+1. Tell Claude what you want to change (e.g., "the wiki dream should also check for broken wikilinks")
+2. Claude drafts an updated skill, creates test cases, and runs them
+3. You review the results in a browser-based viewer
+4. Iterate until you're satisfied
+
+This is how the system adapts to you. The CLAUDE.md schema defines *how things work*. The skills define *what gets done*. And the skill-creator lets you reshape the *what* without touching the *how*.
 
 ## Background
 

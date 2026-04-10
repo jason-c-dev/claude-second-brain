@@ -49,16 +49,18 @@ When I say "compile" or dump new material in raw/:
 
 ### Querying
 For **every** question — not just explicit wiki queries — consult the wiki first:
-1. Read wiki/_master-index.md to check for relevant topics
-2. If a topic exists, read that topic's _index.md to find relevant articles
-3. Read the specific articles
-4. Synthesize the answer
-5. If the wiki answer is incomplete, check raw/ for source material that may contain more detail (wiki articles link back to their sources)
-6. Mention when drawing on wiki knowledge: "Based on what's in the wiki..."
-7. If the answer has lasting reference value, file it as a wiki article — comparisons, analyses, and novel connections should compound into the wiki, not vanish into chat history. If raw/ filled a gap the wiki missed, update the wiki article so the gap is closed for next time.
-8. Log significant queries to wiki/log.md
+1. Use `obsidian vault="Vault" search query="<terms>"` as the first pass — this uses Obsidian's built-in search index which understands wikilinks, tags, and frontmatter
+2. Read wiki/_master-index.md to check for relevant topics
+3. If a topic exists, read that topic's _index.md to find relevant articles
+4. Read the specific articles
+5. Use `obsidian vault="Vault" backlinks file="<name>"` to discover related articles through the link graph
+6. Synthesize the answer
+7. If the wiki answer is incomplete, check raw/ for source material that may contain more detail (wiki articles link back to their sources)
+8. Mention when drawing on wiki knowledge: "Based on what's in the wiki..."
+9. If the answer has lasting reference value, file it as a wiki article — comparisons, analyses, and novel connections should compound into the wiki, not vanish into chat history. If raw/ filled a gap the wiki missed, update the wiki article so the gap is closed for next time.
+10. Log significant queries to wiki/log.md
 
-This is non-optional. The wiki is always the first place to look. Raw/ is the fallback. Each query that hits raw/ should improve the wiki so the next query doesn't have to.
+This is non-optional. The wiki is always the first place to look. Raw/ is the fallback. Each query that hits raw/ should improve the wiki so the next query doesn't have to. Prefer `obsidian search` over Grep for wiki queries — Grep is for precise text matching, Obsidian search is for finding relevant content.
 
 ### Auditing
 When I say "audit" or "lint", review the wiki for:
