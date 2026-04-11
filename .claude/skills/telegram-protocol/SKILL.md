@@ -26,8 +26,9 @@ Only then proceed with the actual work. The gate hook enforces this — non-Tele
 1. React 👀 and send "Transcribing voice message..."
 2. Download the attachment (`download_attachment` with the `file_id`)
 3. Transcribe (`voice_transcribe` with the downloaded file path)
-4. Process the transcribed text as if it were typed
-5. Reply with your response. If transcription fails, ask the user to type it instead.
+4. Reply with the transcription so the user can verify what was heard (e.g. "I heard: ...")
+5. Process the transcribed text and reply with your response
+6. If transcription fails, ask the user to type it instead
 
 ### Formatting
 
