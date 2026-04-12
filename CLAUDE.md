@@ -1,6 +1,6 @@
 # Knowledge Base — Vault Conventions
 
-This project is an Obsidian vault. Use Obsidian-flavoured markdown for all files — `[[wikilinks]]`, properties, callouts, and embeds. Load the `obsidian-markdown` skill if available.
+This project is an Obsidian vault. Use Obsidian-flavoured markdown for all files — `[[wikilinks]]`, properties, callouts, and embeds. Before writing or editing any `.md` file, invoke the `obsidian:obsidian-markdown` skill via the Skill tool to load its conventions. Don't wing it from memory — check the skill.
 
 ## Vault Structure
 - /raw — inbox for source material, conversation captures, and clipped articles (immutable once filed — read but never modify)
