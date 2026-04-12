@@ -21,7 +21,15 @@ When compiling raw sources into wiki articles:
 1. Read `.config/compiled-raw.txt` to see which raw files are already compiled
 2. Read each uncompiled raw file
 3. Decide which topic it belongs to (or create a new topic folder)
-4. Write a wiki article with key takeaways and [[wiki links]] to related concepts
+4. Write a wiki article with YAML frontmatter, key takeaways, and [[wiki links]] to related concepts. Frontmatter format:
+   ```
+   ---
+   created: YYYY-MM-DD
+   updated: YYYY-MM-DD
+   source: <origin of the content — URL, author, email, conversation>
+   ---
+   ```
+   For `_index.md` files add `type: index` (no source needed).
 5. Update that topic's _index.md
 6. Update wiki/_master-index.md
 7. If a raw file spans multiple topics, create articles in both and cross-link
