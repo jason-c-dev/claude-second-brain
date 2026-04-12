@@ -216,19 +216,28 @@ else
   echo "      Edit times with:  crontab -e"
 fi
 
-# ── Whisper check (optional) ─────────────────────────────────────────
+# ── Optional tools check ─────────────────────────────────────────────
 
-echo "[8/8] Voice transcription (optional)"
+echo "[8/8] Optional tools"
+
+# Voice transcription
 if command -v whisper-cli &>/dev/null; then
-  echo "      whisper-cli found."
+  echo "      ✓ whisper-cli (voice transcription) — installed"
 elif command -v ffmpeg &>/dev/null; then
-  echo "      ffmpeg found but whisper-cli not installed."
-  echo "      To enable voice: brew install whisper-cpp && curl -L -o /opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin"
+  echo "      - whisper-cli not installed (ffmpeg found)"
+  echo "        To enable voice: brew install whisper-cpp && curl -L -o /opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin"
 else
-  echo "      ffmpeg and whisper-cli not found."
-  echo "      Voice transcription requires both. Install if needed:"
+  echo "      - voice transcription not installed"
   echo "        brew install ffmpeg whisper-cpp"
   echo "        curl -L -o /opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin"
+fi
+
+# YouTube/media transcripts
+if command -v yt-dlp &>/dev/null; then
+  echo "      ✓ yt-dlp (YouTube transcripts / media ingestion) — installed"
+else
+  echo "      - yt-dlp not installed"
+  echo "        To ingest YouTube / podcasts / video transcripts: brew install yt-dlp"
 fi
 
 # ── Done ─────────────────────────────────────────────────────────────

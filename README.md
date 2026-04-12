@@ -111,6 +111,14 @@ curl -L -o /opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin \
 
 The model path is `/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin` on macOS. For other platforms, see the [whisper.cpp README](https://github.com/ggerganov/whisper.cpp).
 
+**YouTube transcripts / media ingestion** (optional):
+
+```bash
+brew install yt-dlp
+```
+
+With `yt-dlp` installed, Claude can extract metadata and transcripts from YouTube, Vimeo, podcasts, and hundreds of other sources — useful for ingesting tech talks, tutorials, and conference sessions into `raw/`.
+
 ## Quick Start
 
 ```bash
