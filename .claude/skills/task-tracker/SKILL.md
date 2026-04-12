@@ -7,6 +7,8 @@ description: "Track tasks and todos in the vault. Use when the user says 'add th
 
 Capture, organize, and track tasks in the vault using Obsidian-native `- [ ]` checkbox syntax.
 
+**Canonical interface.** This skill is the canonical interface for `wiki/tasks.md` and `raw/YYYY-MM-DD.md` daily notes. Any time you add, modify, check off, archive, or reorganize items in those files — use this skill's conventions. Don't bypass it by editing task files directly from memory; the procedural rules below (proactive completion, archiving, task-vs-memory disambiguation) are what keep the files coherent over time.
+
 ### Task Storage
 
 Two locations, chosen by timescale:
@@ -63,10 +65,20 @@ If the user asks "what's on my list", "what's pending", "what tasks do I have":
 
 ### When Marking Tasks Complete
 
-When the user says "I did X", "X is done", "mark X complete":
+**Explicit completion** — when the user says "I did X", "X is done", "mark X complete":
 1. Find the matching `- [ ]` line in daily note or tasks.md
-2. Change to `- [x]`
+2. Change to `- [x]` and prepend today's date: `- [x] YYYY-MM-DD — ...`
 3. Add a brief note if it produced a wiki article, blog, or other artifact
+4. Move to the `## Done (recent)` section at the bottom of tasks.md
+
+**Proactive completion** — when finishing a piece of work, ALWAYS check whether it matches an open task. If it does:
+1. Tell the user what was done and ask: "This looks like it completes [task text] — shall I mark it done?"
+2. On confirmation, apply the steps above
+3. If the work only partially addresses the task, either update the task text to reflect remaining work OR ask the user whether to split it
+
+**When transforming a task** (e.g. old task "improve X" becomes new task "watch for drift on X" after a change is made):
+- Mark the original `[x]` with completion note, THEN add the new item separately
+- Don't conflate completion + new task into a silent rewrite — the completion signal matters for the historical record
 
 ### Daily Note Conventions
 
@@ -83,7 +95,17 @@ When the user says "I did X", "X is done", "mark X complete":
 - Typical sections: Infrastructure, Refactoring, Research / Architecture, Content / Blog, Parity / Maintenance
 - Each item: `- [ ] brief description — optional context or link to related wiki article`
 - When a task spawns a wiki article, link it inline
-- Completed items: archive to a `## Done` section at the bottom with completion date, or delete if trivial
+- Completed items: move to `## Done (recent)` section with completion date prefix `- [x] YYYY-MM-DD — ...`. Never delete — history matters ("we did that thing on this date to solve this problem" is the reason to keep it)
+
+### Growth and Archival
+
+`wiki/tasks.md` will grow. Don't prune — archive.
+
+- `## Done (recent)` holds completed items from the last ~14 days. Keeps tasks.md scannable without losing history
+- Items older than that should be archived to `wiki/tasks-archive/YYYY-MM.md` (monthly files, `type: archive` in frontmatter)
+- Archive files preserve the full `[x] YYYY-MM-DD — description` line — searchable later, grep-able for "when did we solve X"
+- The `dream-tasks` cycle (if set up) handles the move automatically overnight. If not set up, do it manually every couple of weeks or when Done (recent) grows past ~20 items
+- Never delete completed items from tasks.md without first moving to archive. The completion date + text is the historical record
 
 ### Examples
 
